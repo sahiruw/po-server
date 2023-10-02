@@ -1,0 +1,47 @@
+# Node.js dependencies
+node_modules/
+
+# Logs
+logs/
+*.log
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Debug files
+.vscode/
+.idea/
+
+# Build files
+build/
+dist/
+out/
+tmp/
+
+# Dependency directories
+.pnpm/
+yarn-error.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Editor-specific files
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Ignore package-lock.json if using npm
+package-lock.json
+
+# Ignore yarn.lock if using Yarn
+yarn.lock
+
+# Ignore pnpm-lock.yaml if using pnpm
+pnpm-lock.yaml
+
+# Ignore .npmrc file containing npm login credentials
+.npmrc
