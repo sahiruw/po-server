@@ -13,9 +13,7 @@ const Constants = require("../utils/constants");
 
 class mailItemModel {
   static async getMailItemsForRegion(addressIDs, addressData) {
-    // const statusValues = [
-    //   Constants.MailItemStatus.TobeDelivered,
-    // ];
+
     const chunkSize = 15; // Maximum number of values per query
 
     const chunks = [];
@@ -60,10 +58,6 @@ class mailItemModel {
 
   static async markMailItemsAsToBeDelivered() {
     // get all mail items with status "To be Delivered"
-    console.log([
-        Constants.MailItemStatus.OutforDelivery,
-        Constants.MailItemStatus.Failed,
-      ])
     const q = query(
         collection(db, "MailServiceItem"),
         where("status", "in", [Constants.MailItemStatus.OutforDelivery, Constants.MailItemStatus.Failed])

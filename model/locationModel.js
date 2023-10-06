@@ -7,8 +7,24 @@ const {
   query,
   getDocs,
 } = require("firebase/firestore");
+const axios = require('axios');
+
+const apiKey = process.env.GMAPS_API_KEY;
 
 class locationModel {
+  static async getPostOfficeLocation(poID) {
+    const docRef = doc(db, "Postoffice", poID);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      return docSnap.data().Location;
+    } else {
+      throw new Error("Post Office does not exist");
+    }
+
+  }
+
+
   static async getRegions(poID) {
     let regions = [];
     //get documents from Region where postoffice_id=poID and push the id of each doc to regions
@@ -40,6 +56,29 @@ class locationModel {
 
     return {addresses, addressData};
   }
+
+  static async getDistance(origin, dest) {
+    let [originLat, originLng] = origin
+    let [destLat, destLng] = dest
+
+    try {
+      const response = await axios.get(
+        `https://maps.googleapis.com/maps/api/directions/json?origin=${originLat},${originLng}&destination=${destLat},${destLng}&mode=driving&key=${apiKey}`
+      );
+  
+      if (response.status === 200) {
+        const route = response.data.routes[0];
+        const distanceText = route.legs[0].distance.text;
+        const distanceFloat = parseFloat(distanceText.replace(/[^0-9.]/g, ''));
+        return distanceFloat;
+      } else {
+        throw new Error('Error fetching directions');
+      }
+    } catch (error) {
+      throw error;
+    }
+  }
+  
 }
 
 module.exports = locationModel;
