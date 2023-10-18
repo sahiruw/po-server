@@ -6,49 +6,56 @@ const christofides = require("../utils/algorithms/christofides");
 
 const createRoutes = async (req, res) => {
   //mark all as tobe delivered
-  await mailItemModel.markMailItemsAsToBeDelivered();
+  try {
+    await mailItemModel.markMailItemsAsToBeDelivered();
 
-  let po = req.query.po;
-  let regions = await locationModel.getRegions(po);
-  let poLocation = await locationModel.getPostOfficeLocation(po);
-  
-  let { addresses, addressData } = await locationModel.getAddressesofRegion(
-    regions
-  );
+    let po = req.query.po;
+    console.log(po);
 
-  let mailItems = await mailItemModel.getMailItemsForRegion(
-    addresses,
-    addressData
-  );
+    let regions = await locationModel.getRegions(po);
+    
+    console.log(regions);
+    let poLocation = await locationModel.getPostOfficeLocation(po);
+    let { addresses, addressData } = await locationModel.getAddressesofRegion(
+      regions
+    );
 
-  let classifiedMailItems = classifyByRegion(mailItems);
-  let classifiedOrderedMailItems = {};
+    let mailItems = await mailItemModel.getMailItemsForRegion(
+      addresses,
+      addressData
+    );
 
-  for (let region in classifiedMailItems) {
-    // if (region === "rg-1") {
-    //   continue;
-    // }
-    let addresses = classifiedMailItems[region];
-    addresses.unshift({address: poLocation, id: "po"});
+    let classifiedMailItems = classifyByRegion(mailItems);
+    let classifiedOrderedMailItems = {};
 
-    let distanceMatrix = await createDistanceMatrix(addresses);
-    // console.log(distanceMatrix);
+    for (let region in classifiedMailItems) {
+      // if (region === "rg-1") {
+      //   continue;
+      // }
+      let addresses = classifiedMailItems[region];
+      addresses.unshift({ address: poLocation, id: "po" });
 
-    let tspPath = christofides(distanceMatrix);
+      let distanceMatrix = await createDistanceMatrix(addresses);
+      // console.log(distanceMatrix);
 
-    let orderedMailItems = [];
-    for (let i = 0; i < tspPath.length; i++) {
-      if (tspPath[i] != 0) {
-        orderedMailItems.push(addresses[tspPath[i]].id);
+      let tspPath = christofides(distanceMatrix);
+
+      let orderedMailItems = [];
+      for (let i = 0; i < tspPath.length; i++) {
+        if (tspPath[i] != 0) {
+          orderedMailItems.push(addresses[tspPath[i]].id);
+        }
       }
+      classifiedOrderedMailItems[region] = orderedMailItems;
     }
-    classifiedOrderedMailItems[region] = orderedMailItems;
+
+    console.log(classifiedOrderedMailItems);
+    let sts = await routeModel.addRouteToDatabase(classifiedOrderedMailItems);
+    res.json({ message: "Successful", status: true });
+  } catch (err) {
+    console.log(err);
+    res.json({ message: "Error", status: false });
   }
-
-  console.log(classifiedOrderedMailItems);
-  let sts = await routeModel.addRouteToDatabase(classifiedOrderedMailItems);
-
-  res.json({ message: "Hello Worldd " });
 };
 
 const createDistanceMatrix = async (addresses) => {

@@ -26,7 +26,7 @@ class mailItemModel {
       return query(
         collection(db, "MailServiceItem"),
         where("receiver_address_id", "in", chunk),
-        where("status", "==", Constants.MailItemStatus.TobeDelivered)
+        where("status", "==", Constants.MailItemStatus.Assigned)
       );
     });
 
