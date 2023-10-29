@@ -12,6 +12,34 @@ const axios = require('axios');
 const apiKey = process.env.GMAPS_API_KEY;
 
 class locationModel {
+  static async getPostmen(poID) {
+    let postmen = [];
+    
+    const q = query(
+      collection(db, "employees"),
+      where("role", "==", "postman"),
+      where("postoffice", "==", poID)
+    );
+    const querySnapshot = await getDocs(q);
+    querySnapshot.forEach((doc) => {
+      postmen.push(doc.id);
+    });
+
+    return postmen;
+  }
+
+  static async getAddressByID(addressID) {
+    const docRef = doc(db, "Address", addressID);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      return docSnap.data();
+    } else {
+      throw new Error("Address does not exist");
+    }
+  }
+
+
   static async getPostOfficeLocation(poID) {
     const docRef = doc(db, "Postoffice", poID);
     const docSnap = await getDoc(docRef);

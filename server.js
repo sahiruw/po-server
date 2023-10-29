@@ -1,20 +1,21 @@
 const express = require("express");
 
 const dotenv = require("dotenv").config()
-// const {db, store} = require('./firebase');
 const cookie = require("cookie-parser")
+const {verifyToken} = require("./utils/auth/verifyToken")
+
 
 const PORT = 5000
-const app = express();
+const eapp = express();
 
 var corsOptions = {
     origin: "http://localhost:3000"
   };
   
 const cors = require("cors");
-app.use(cors());
+eapp.use(cors());
 
-app.use(cookie())
-app.use(express.json())
-app.use("/", require("./app"))
-app.listen(process.env.PORT || PORT)
+eapp.use(cookie())
+eapp.use(express.json())
+eapp.use("/", verifyToken, require("./app"))
+eapp.listen(process.env.PORT || PORT)

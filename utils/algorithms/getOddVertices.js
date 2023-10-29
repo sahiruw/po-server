@@ -13,7 +13,6 @@ const getOddVertices = (mst) => {
       oddVertices.push(i);
     }
   }
-
   return oddVertices;
 };
 

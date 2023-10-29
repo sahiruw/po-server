@@ -10,22 +10,19 @@ const createRoutes = async (req, res) => {
     await mailItemModel.markMailItemsAsToBeDelivered();
 
     let po = req.query.po;
-    console.log(po);
+    console.log(po)
+    if (!po) {
+      throw new Error("Post Office ID not provided");
+    }
 
-    let regions = await locationModel.getRegions(po);
-    
-    console.log(regions);
+    let postmen = await locationModel.getPostmen(po);
+
     let poLocation = await locationModel.getPostOfficeLocation(po);
-    let { addresses, addressData } = await locationModel.getAddressesofRegion(
-      regions
-    );
 
-    let mailItems = await mailItemModel.getMailItemsForRegion(
-      addresses,
-      addressData
-    );
+    let mailItems = await mailItemModel.getMailItesmForPostman(postmen);
 
-    let classifiedMailItems = classifyByRegion(mailItems);
+    let classifiedMailItems = classifyByPostman(mailItems);
+    // console.log(classifiedMailItems)
     let classifiedOrderedMailItems = {};
 
     for (let region in classifiedMailItems) {
@@ -50,11 +47,12 @@ const createRoutes = async (req, res) => {
     }
 
     console.log(classifiedOrderedMailItems);
-    let sts = await routeModel.addRouteToDatabase(classifiedOrderedMailItems);
-    res.json({ message: "Successful", status: true });
+    await routeModel.addRouteToDatabase(classifiedOrderedMailItems);
+    
+    res.json({ message: "Successful", status: true, desc: "Route added succesfully" });
   } catch (err) {
     console.log(err);
-    res.json({ message: "Error", status: false });
+    res.json({ message: "Error", status: false , desc: err.message});
   }
 };
 
@@ -74,6 +72,22 @@ const createDistanceMatrix = async (addresses) => {
   }
 
   return distanceMatrix;
+};
+
+const classifyByPostman = (mailItems) => {
+  let classifiedMailItems = {};
+  // classify by region
+  for (let i = 0; i < mailItems.length; i++) {
+    let postman = mailItems[i].assigned_postman;
+    if (!classifiedMailItems[postman]) {
+      classifiedMailItems[postman] = [];
+    }
+    classifiedMailItems[postman].push({
+      id: mailItems[i].id,
+      address: mailItems[i].receiver_address.Location,
+    });
+  }
+  return classifiedMailItems;
 };
 
 const classifyByRegion = (mailItems) => {

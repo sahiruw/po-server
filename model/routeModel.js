@@ -18,11 +18,9 @@ class routeModel {
       let docRef = await doc(db, "Route", date);
       await setDoc(docRef, classifiedMailItems);
 
-      console.log("Route created");
-      return true;
     } catch (error) {
       console.log(error);
-      return false;
+      throw new Error("Error adding route to database");
     }
   }
 }
