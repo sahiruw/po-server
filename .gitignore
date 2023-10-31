@@ -45,3 +45,5 @@ pnpm-lock.yaml
 
 # Ignore .npmrc file containing npm login credentials
 .npmrc
+*.json
+*.zip
